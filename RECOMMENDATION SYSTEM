@@ -1,0 +1,63 @@
+# This Python 3 environment comes with many helpful analytics libraries installed
+# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
+# For example, here's several helpful packages to load
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+# Input data files are available in the read-only "../input/" directory
+# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
+# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
+
+import numpy as np 
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+
+df_movies = pd.read_csv("/kaggle/input/tmdb-movie-metadata/tmdb_5000_movies.csv")
+df_credits = pd.read_csv("/kaggle/input/tmdb-movie-metadata/tmdb_5000_credits.csv")
+
+df_movies.head()
+
+
+df_credits.head()
+
+
+df_movies['overview']
+
+tfidf = TfidfVectorizer(stop_words="english")
+df_movies['overview'] = df_movies['overview'].fillna("")
+tfidf_matrix = tfidf.fit_transform(df_movies['overview'])
+
+cosine_sim =linear_kernel(tfidf_matrix ,tfidf_matrix )
+
+
+
+indices = pd.Series(df_movies.index,  index=df_movies['original_title']).drop_duplicates()
+indices
+
+
+indices['The Dark Knight Rises']
+
+
+def get_recommendations(title, cosine_sim = cosine_sim):
+    idx=indices[title]
+    sim_scores = enumerate (cosine_sim[idx])
+    sim_scores = sorted(sim_scores , key=lambda x:x[1] , reverse = True)
+    sim_scores = sim_scores[1:11]
+    
+    sim_index= [i[0] for i in  sim_scores]
+    print(df_movies["original_title"].iloc[sim_index])
+
+
+get_recommendations('The Matrix')
+
+                
+
